@@ -1,4 +1,4 @@
---237 window functions
+﻿--237 window functions
 select ROW_NUMBER() OVER (PARTITION BY orderid order by qty) as row,
 	orderid, productid, qty, unitprice,
 	sum(unitprice*qty) over (partition by orderid order by qty rows between unbounded preceding and current row) as running_total
@@ -219,4 +219,11 @@ from (
 	on o.orderid = od.orderid
 ) as ord
 pivot(sum(qty) for empid in ([1],[2],[3],[4],[5],[6],[7],[8],[9])) as t
+
+-- Chapter 8. Data modification
+-- Inserting data :
+	-- 1. Insert Select
+	-- 2. Select Into 
+	-- 3. Bulk Insert
+	-- 4. Insert Values : حتما نام فیزیکی ستون ها قید گردد تا از درج اشتباه داده در ستون غیر مرتبط جلوگیری شود
 
