@@ -125,7 +125,7 @@ select * from
 (
 	select ROW_NUMBER() OVER (ORDER BY totalQTY) as row,* from Sales.CusQtyMonthly
 ) R
-order by R.row
+where R.row between 100 and 150
 
 
 ------------------------ Grouopig Set | Cube | Rollup ------------------------
