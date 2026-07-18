@@ -119,5 +119,62 @@ select o.orderid, o.orderdate, o.custid
 from Sales.orders o
 order by o.custid,orderNo
 
+------------------------ Grouopig Set | Cube | Rollup ------------------------
+
+-- Report 1
+select  o.empid
+		, o.custid
+		, cast( sum(od.qty * od.unitprice * (1- od.discount)) as numeric(12,2)) as totalOrderVal
+from Sales.Orders o
+join Sales.OrderDetails od
+on o.orderid = od.orderid
+group by o.empid
+		, o.custid
+
+-- Report 2
+
+select o.empid
+		, cast(sum(od.qty * od.unitprice * (1- od.discount)) as numeric(12,2)) as totlaOrderVal
+from Sales.orders o
+join sales.OrderDetails od
+on o.orderid = od.orderid
+group by o.empid
+
+-- Reprt 3
+
+select o.custid
+		, cast(sum(od.qty * od.unitprice * (1- od.discount)) as numeric(12,2)) as totlaOrderVal
+from Sales.orders o
+join sales.OrderDetails od
+on o.orderid = od.orderid
+group by o.custid
+
+-- Report 4
+
+select cast(sum(qty * unitprice * (1- discount)) as numeric(12,2)) as totlaOrderVal
+from Sales.OrderDetails
+
+-- Q :  What if I need all four report in a one report ? 
+-- A1 : use UNION ALL
+-- A2 : The GROUPING SETS subclause
+
+------------------- The GROUPING SETS subclause ---------------------
+
+select o.empid
+		, o.custid
+		, cast(sum(qty * unitprice * (1- discount)) as numeric(12,2)) as totlaOrderVal
+from Sales.orders o
+join Sales.OrderDetails od
+on o.orderid = od.orderid
+group by 
+	GROUPING SETS (
+		(empid, custid),
+		(empid),
+		(custid),
+		()
+	)
+
+
+
 
 
