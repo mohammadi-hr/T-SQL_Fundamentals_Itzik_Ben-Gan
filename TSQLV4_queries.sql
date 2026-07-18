@@ -207,5 +207,16 @@ select YEAR(o.orderdate) as [year],
 		)
 
 
+	-- PIVOT --
 
+select distinct empid from Sales.Orders
+
+select custid, [1],[2],[3],[4],[5],[6],[7],[8],[9]
+from (
+	select custid, empid, qty --cast(sum(od.qty * od.unitprice * (1- od.discount)) as numeric(12,2)) as total
+	from Sales.orders o
+	join sales.orderdetails od
+	on o.orderid = od.orderid
+) as ord
+pivot(sum(qty) for empid in ([1],[2],[3],[4],[5],[6],[7],[8],[9])) as t
 
