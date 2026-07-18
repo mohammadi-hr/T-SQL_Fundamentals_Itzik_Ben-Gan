@@ -186,7 +186,25 @@ select GROUPING_ID(empid, custid)
 	group by
 		cube(empid, custid)
 
+	-- Roll UP --
 
+select YEAR(o.orderdate) as [year],
+		MONTH(o.orderdate) as [month],
+		DAY(o.orderdate) as [day],
+		o.custid, 
+		o.empid,
+		cast(sum(od.qty * od.unitprice * (1- od.discount)) as numeric(12,2)) as totalOrderVal
+	from Sales.Orders O
+	join Sales.OrderDetails OD
+	on O.orderid = OD.orderid
+	group by 
+		rollup(			
+			YEAR(o.orderdate),
+			MONTH(o.orderdate),
+			DAY(o.orderdate),
+			o.custid, 
+			o.empid
+		)
 
 
 
