@@ -174,6 +174,19 @@ group by
 		()
 	)
 
+	-- Grouping ID | CUBE --
+
+select GROUPING_ID(empid, custid)
+		, empid
+		, custid
+		, cast(sum(qty * unitprice * (1- discount)) as numeric(12,2)) as totalOrderVal
+	from Sales.Orders O
+	join Sales.OrderDetails OD
+	on O.orderid = OD.orderid
+	group by
+		cube(empid, custid)
+
+
 
 
 
