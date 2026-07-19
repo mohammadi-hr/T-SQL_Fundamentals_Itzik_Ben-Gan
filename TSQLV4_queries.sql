@@ -127,6 +127,23 @@ select * from
 ) R
 where R.row between 100 and 150
 
+-- cume_dist() window function --
+
+
+-- percent_rank() window function --
+
+
+-- Window Frames --
+
+-- Q : Calculate Running Total 'orders totalvalue' From 2 Month Ago Until Now (use window frame)
+
+select YEAR(orderdate), MONTH(orderdate),empid,
+		SUM(val) OVER (
+			ORDER BY YEAR(orderdate), MONTH(orderdate)
+			ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+		) as TotalEmpSales		
+from Sales.OrderValues
+
 
 ------------------------ Grouopig Set | Cube | Rollup ------------------------
 
@@ -282,3 +299,6 @@ FROM (
 	(10005, '20160213', 1, 'C'),
 	(10006, '20160215', 3, 'C')
 ) O(orderid, orderdate, empid, custid)
+
+
+
