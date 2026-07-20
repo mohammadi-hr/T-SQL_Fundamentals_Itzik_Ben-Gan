@@ -128,7 +128,15 @@ select * from
 where R.row between 100 and 150
 
 -- cume_dist() window function --
+-- Q : گران ترین محصول هر دسته بندی را مشخص کنید
 
+select categoryid, MAX(unitprice) as TotalProduct
+	from Production.Products
+	group by categoryid
+
+select categoryid,productid,productname, unitprice,
+		CUME_DIST() OVER (PARTITION BY categoryid order by unitprice)
+		from Production.Products
 
 -- percent_rank() window function --
 
