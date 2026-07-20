@@ -140,8 +140,45 @@ select categoryid,productid,productname, unitprice,
 
 -- percent_rank() window function --
 
+select categoryid,productid,productname, unitprice,
+		PERCENT_RANK() OVER (PARTITION BY categoryid order by unitprice)
+		from Production.Products
 
 -- Window Frames --
+
+-- UNBOUNDED PRECEDING ← از اولین رکورد پارتیشن
+-- n PRECEDING ← n رکورد قبل از رکورد فعلی
+-- CURRENT ROW ← فقط رکورد فعلی
+-- n FOLLOWING ← n رکورد بعد از رکورد فعلی
+-- UNBOUNDED FOLLOWING ← 
+
+-- ✅ این توابع اجازه Window Frame دارند:
+	--SUM() OVER (... ROWS BETWEEN ...)
+	--AVG() OVER (... ROWS BETWEEN ...)
+	--COUNT() OVER (... ROWS BETWEEN ...)
+	--MAX() OVER (... ROWS BETWEEN ...)
+	--MIN() OVER (... ROWS BETWEEN ...)
+
+-- Q : همه افرادی از هر شهر که بین 40 تا 60 میلیون حقوق می گیرند
+
+alter table hr.employees
+ add salary numeric(12,0) null;
+
+ update hr.Employees
+ set salary = FLOOR(RAND(CHECKSUM(NEWID())) * (100000000 - 30000000 + 1)) + 30000000;
+
+ select * from hr.Employees;
+
+select empid,
+		firstname,
+		lastname,
+		salary,
+		city,
+		ROW_NUMBER() Over (partition by city order by salary) 	as [تعداد]
+from HR.Employees
+where salary >=40000000 and salary <60000000
+
+
 
 -- Q : Calculate Running Total 'orders totalvalue' From 2 Month Ago Until Now (use window frame)
 
@@ -310,3 +347,41 @@ FROM (
 
 
 
+------------ Pagination ---------------
+-- 1. Temp Table
+-- 2. Window Functions
+-- 3. Offset, Fetch
+
+
+
+
+------------ Cross Apply | Outer Aply ------------
+
+-- Q : به ازای هر سفارش گران ترین کالای فاکتور رو استخراج کن
+ 
+-- 1 : Use Group By
+
+select o.orderid, max(od.unitprice) as maxUnirPrice
+from Sales.orders o
+join Sales.OrderDetails od
+on o.orderid = od.orderid
+group by o.orderid
+
+-- 2 : Use Corelated Subquery
+set statistics io on
+select o.orderid,
+		(
+			select max(od.unitprice) from Sales.OrderDetails od where od.orderid = o.orderid
+		)
+from Sales.Orders o
+
+-- 3 : Cross Apply
+
+select o.orderid,
+		x.maxUnitPrice
+from Sales.Orders o
+cross apply
+	(
+		select max(od.unitprice) as maxUnitPrice from Sales.OrderDetails od
+		where od.orderid = o.orderid
+	) x
