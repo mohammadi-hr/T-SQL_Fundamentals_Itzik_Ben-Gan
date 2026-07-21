@@ -373,12 +373,18 @@ GO
 select * from dbo.Orders
 GO
 
---
+-- select into --
 
 select * into Temp1 from Production.Products
 GO
 
 select * from Temp1
+
+-- insert output --
+
+insert into Production.Products
+	output inserted.*
+values('apple', 4,4,125,0.1)
 
 --		ACID (Transaction) : Buffer Pool > Log File (ldf) > Data Pages (mdf)
 
