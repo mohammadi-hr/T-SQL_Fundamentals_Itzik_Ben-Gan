@@ -386,6 +386,16 @@ insert into Production.Products
 	output inserted.*
 values('apple', 4,4,125,0.1)
 
+-- Save the resutl of output in other table --
+
+declare @tempProducts table(productid int primary key, productname nvarchar(100), supplierid int, categoryid int, unitprice float(10), discontinued int)
+insert into Production.Products 
+	output inserted.productid,inserted.productname,inserted.supplierid, inserted.categoryid,inserted.unitprice,inserted.discontinued into @tempProducts
+values('car', 27, 2,25000,0)
+
+select * from @tempProducts
+go
+
 --		ACID (Transaction) : Buffer Pool > Log File (ldf) > Data Pages (mdf)
 
 
