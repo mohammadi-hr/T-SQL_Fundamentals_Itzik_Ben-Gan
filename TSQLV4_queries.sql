@@ -291,61 +291,6 @@ from (
 ) as ord
 pivot(sum(qty) for empid in ([1],[2],[3],[4],[5],[6],[7],[8],[9])) as t
 
--- Chapter 8. Data modification (Data Manipulation Language (DML))
--- Inserting data :
-	
-	--  Insert Values (Single and MultiRow Values) : حتما نام فیزیکی ستون ها قید گردد تا از درج اشتباه داده در ستون غیر مرتبط جلوگیری شود
-	
-	--  Insert Select
-	--  Insert EXEC
-	--  Select Into 
-	--  Bulk Insert
-
-USE TSQLV4;
-GO
-DROP TABLE IF EXISTS dbo.Orders;
-GO
-CREATE TABLE dbo.Orders
-(
-orderid INT NOT NULL
-	CONSTRAINT PK_Orders PRIMARY KEY,
-orderdate DATE NOT NULL
-	CONSTRAINT DFT_orderdate DEFAULT(SYSDATETIME()),
-empid INT NOT NULL,
-custid VARCHAR(10) NOT NULL
-);
-
-insert into dbo.Orders(orderid, empid, custid) values (1010, 10, 'A')
-GO
-
-select * from dbo.Orders
-GO
-
---		ACID (Transaction) : Buffer Pool > Log File (ldf) > Data Pages (mdf)
-
-
-INSERT INTO dbo.Orders
-(orderid, orderdate, empid, custid)
-VALUES
-(10003, '20160213', 4, 'B'),
-(10004, '20160214', 1, 'A'),
-(10005, '20160213', 1, 'C'),
-(10006, '20160215', 3, 'C')
-
-GO
-
---		TVC (Table-value Constructor) VS #Temp Table
-
-SELECT * 
-FROM (
-	VALUES
-	(10003, '20160213', 4, 'B'),
-	(10004, '20160214', 1, 'A'),
-	(10005, '20160213', 1, 'C'),
-	(10006, '20160215', 3, 'C')
-) O(orderid, orderdate, empid, custid)
-
-
 
 ------------ Pagination ---------------
 -- 1. Temp Table
@@ -385,3 +330,76 @@ cross apply
 		select max(od.unitprice) as maxUnitPrice from Sales.OrderDetails od
 		where od.orderid = o.orderid
 	) x
+
+
+-- Data modification (Data Manipulation Language (DML))
+
+-- DML Queries : Insert - Update - Delete - Merge
+
+-- WAL : Write Ahead Logging : Log before write to data file (checkpoint)
+
+select * from fn_dblog(null,null)
+select @@VERSION
+
+select SCOPE_IDENTITY()
+
+-- Inserting data :
+	
+	--  Insert Values (Single and MultiRow Values) : حتما نام فیزیکی ستون ها قید گردد تا از درج اشتباه داده در ستون غیر مرتبط جلوگیری شود
+	
+	--  Insert Select
+	--  Insert EXEC
+	--  Select Into 
+	--  Bulk Insert
+
+USE TSQLV4;
+GO
+DROP TABLE IF EXISTS dbo.Orders;
+GO
+CREATE TABLE dbo.Orders
+(
+orderid INT NOT NULL
+	CONSTRAINT PK_Orders PRIMARY KEY,
+orderdate DATE NOT NULL
+	CONSTRAINT DFT_orderdate DEFAULT(SYSDATETIME()),
+empid INT NOT NULL,
+custid VARCHAR(10) NOT NULL
+);
+GO
+
+insert into dbo.Orders(orderid, empid, custid) values (1010, 10, 'A')
+GO
+
+select * from dbo.Orders
+GO
+
+--
+
+select * into Temp1 from Production.Products
+GO
+
+select * from Temp1
+
+--		ACID (Transaction) : Buffer Pool > Log File (ldf) > Data Pages (mdf)
+
+
+INSERT INTO dbo.Orders
+(orderid, orderdate, empid, custid)
+VALUES
+(10003, '20160213', 4, 'B'),
+(10004, '20160214', 1, 'A'),
+(10005, '20160213', 1, 'C'),
+(10006, '20160215', 3, 'C')
+
+GO
+
+--		TVC (Table-value Constructor) VS #Temp Table
+
+SELECT * 
+FROM (
+	VALUES
+	(10003, '20160213', 4, 'B'),
+	(10004, '20160214', 1, 'A'),
+	(10005, '20160213', 1, 'C'),
+	(10006, '20160215', 3, 'C')
+) O(orderid, orderdate, empid, custid)
