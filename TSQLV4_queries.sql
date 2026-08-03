@@ -419,3 +419,49 @@ FROM (
 	(10005, '20160213', 1, 'C'),
 	(10006, '20160215', 3, 'C')
 ) O(orderid, orderdate, empid, custid)
+
+use TSQLV4
+go
+
+if OBJECT_ID('dbo.taxerror') > 0
+	drop table dbo.taxerror
+	go
+
+create table dbo.taxerror (reference_number nvarchar(100),uid nvarchar(100),fiscal_id nvarchar(100),status nvarchar(100),error_code nvarchar(100),error_message nvarchar(500),error_type nvarchar(100),success nvarchar(100))
+
+-- Bulk Insert --
+bulk insert dbo.taxerror from 'C:\Users\h.mohammadi\Downloads\tax_errors_20260520.csv'
+with (
+	keepidentity,
+	firstrow = 1,
+	fieldterminator = ',',
+	rowterminator = '\n'
+)
+
+-------------------- Clustered and NonCluctered ColumnStore Database ------------------------
+
+-- بررسی تعداد صفحات تخصیص داده شده به جدول و ایندکس ها
+select s.index_id, 
+		s.index_type_desc,
+		s.alloc_unit_type_desc,
+		s.index_depth,
+		s.index_level,
+		s.page_count,
+		s.record_count
+from sys.dm_db_index_physical_stats(DB_ID('TSQLV6'), OBJECT_ID('Sales.Orders'),null,null,'detailed') s
+
+
+-- create nonclustered columnstore index
+
+select * from sales.orders
+create nonclustered columnstore index [nonClustered_columnStore] on Sales.Orders(orderid,custid,empid)
+
+select OBJECT_SCHEMA_NAME(i.object_id) schemaName,
+		OBJECT_NAME(i.object_id) tableName,
+		i.type_desc, i.name indexName,
+		sum(s.used_page_count) / 128.0 indexSizeInMB
+from sys.indexes i
+join sys.dm_db_partition_stats s
+on i.object_id = s.object_id and i.index_id = s.index_id
+where i.object_id = object_id('Sales.Orders')
+group by i.object_id, i.name, i.type_desc
