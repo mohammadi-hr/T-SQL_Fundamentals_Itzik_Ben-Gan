@@ -218,3 +218,8 @@ as
 go
 
 update sales.orders2 set custid = 2 where orderid = 2
+
+
+
+------ Insteasd Of Triggers ------
+
