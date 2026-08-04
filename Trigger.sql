@@ -204,3 +204,17 @@ select custid, count(orderid) as totalOrders
 
 delete from sales.customers2 where custid = 4
 	
+-- create a trigger to limit update action in some field of the table
+
+create trigger trg_limit_update_custid on sales.orders2
+after update
+as
+	if update(custid)
+	begin
+		print 'this field can not be updated'
+		rollback tran
+		return
+	end
+go
+
+update sales.orders2 set custid = 2 where orderid = 2
