@@ -150,30 +150,57 @@ go
 create trigger trg_delete_products on production.products
 after delete
 as 
-	insert into Production.ProductsHistory (productid,
-											productname,
-											supplierid,
-											categoryid,
-											unitprice,
-											discontinued,
-											actionType,
-											actionDate
-											)
-	select productid,productname,supplierid,categoryid,unitprice,discontinued,'DELETE',GETDATE() from deleted
+insert into Production.ProductsHistory (productid,
+										productname,
+										supplierid,
+										categoryid,
+										unitprice,
+										discontinued,
+										actionType,
+										actionDate
+										)
+select productid,productname,supplierid,categoryid,unitprice,discontinued,'DELETE',GETDATE() from deleted
 
 
-	-- test the created triggers
+-- test the created triggers
 
-	insert into Production.Products(productname,
-									supplierid,
-									categoryid,
-									unitprice,
-									discontinued						
-											)values ('FuelTank', 10, 1, 1200, 1)
+insert into Production.Products(productname,
+								supplierid,
+								categoryid,
+								unitprice,
+								discontinued						
+										)values ('FuelTank', 10, 1, 1200, 1)
 
-	select * from Production.ProductsHistory
-
-
-	-- create a trigger that forbbidden deleting customers that have more than one orders
+select * from Production.ProductsHistory
 
 
+-- create a trigger that forbbidden deleting customers that have more than one orders
+
+select top 5 * from Sales.Customers
+select top 5 * from Sales.Orders
+
+select * into sales.customers2 from Sales.Customers
+
+create trigger trg_delete_cust_limit on sales.customers2
+after delete
+as
+declare @custID int
+select @custID = custid from deleted
+	if(
+		select count(orderid) from Sales.orders2 where custid = @custID 
+	) > 1
+	begin
+		print 'this customer can`t be deleted'
+		rollback tran
+	end
+go
+
+-- test deleting customer with more than one order
+
+select custid, count(orderid) as totalOrders
+	from Sales.Orders2
+	group by custid
+	having(count(orderid)) > 1
+
+delete from sales.customers2 where custid = 4
+	
