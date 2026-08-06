@@ -223,3 +223,203 @@ update sales.orders2 set custid = 2 where orderid = 2
 
 ------ Insteasd Of Triggers ------
 
+-- doing data validation by instead of trigger
+-- insert into orders if forign key integrity meet
+
+select top 5 * from sales.orders2
+
+if exists (select * from sys.triggers where name = 'trg_insert_date_validation') 
+	drop trigger sales.trg_insert_date_validation
+go
+
+create trigger trg_insert_date_validation on sales.orders2
+instead of insert
+as
+begin 
+
+set nocount on;
+	-- check if custid not exists in customers table
+	if exists 
+	(
+		select 1 from inserted i
+		left join sales.Customers2 c on i.custid = c.custid
+		where c.custid is null
+	)
+	begin
+		raiserror('custid not exsists in customers2 table',16 ,1);
+		rollback tran
+		return
+	end
+
+	insert into Sales.orders2 ([custid]
+							  ,[empid]
+							  ,[orderdate]
+							  ,[requireddate]
+							  ,[shippeddate]
+							  ,[shipperid]
+							  ,[freight]
+							  ,[shipname]
+							  ,[shipaddress]
+							  ,[shipcity]
+							  ,[shipregion]
+							  ,[shippostalcode]
+							  ,[shipcountry]) 
+	  select [custid]
+			  ,[empid]
+			  ,[orderdate]
+			  ,[requireddate]
+			  ,[shippeddate]
+			  ,[shipperid]
+			  ,[freight]
+			  ,[shipname]
+			  ,[shipaddress]
+			  ,[shipcity]
+			  ,[shipregion]
+			  ,[shippostalcode]
+			  ,[shipcountry]
+		from inserted i
+end
+go
+
+-- test data validation instead of trigger
+
+select * from sales.orders2
+
+insert into sales.orders2 ([custid]
+						  ,[empid]
+						  ,[orderdate]
+						  ,[requireddate]
+						  ,[shippeddate]
+						  ,[shipperid]
+						  ,[freight]
+						  ,[shipname]
+						  ,[shipaddress]
+						  ,[shipcity]
+						  ,[shipregion]
+						  ,[shippostalcode]
+						  ,[shipcountry])
+						  values (
+							95,
+							2,
+							GETDATE(),
+							GETDATE(),
+							GETDATE(),
+							2345,
+							1.2,
+							'Ship to 79-C',
+							'Luisenstr. 9012',
+							'Rio de Janeiro',
+							null,
+							10345,
+							'France'
+						  )
+
+select * from sales.orders2
+
+------ DDL Triggers ------
+
+-- Usage : 
+-- 1. Database Level DDL Triggers :
+	-- Audit Schema change
+	-- prevent unauthorized schema change
+	-- Enfore naming convensions
+	-- Maintain history of stored procedure changes
+-- 2.Server level DDL Triggers
+
+create trigger ddl_db_tigger on database
+for drop_table ,alter_table
+as
+	raiserror('you can not drop or alter table',16,1)
+	rollback
+go
+
+drop table sales.orders2
+
+disable trigger ddl_db_tigger on database
+
+------- get database level and system level triggers info ------
+
+select * from sys.trigger_event_types
+
+select * from sys.trigger_events
+
+select * from sys.triggers
+
+select * from sys.trigger_event_types where type_name = 'DDL_DATABASE_LEVEL_EVENTS'
+select * from sys.trigger_event_types where type = 10001
+
+-- Log DDL Changes best practices --
+
+create schema DBA 
+
+create table DBA.DDL_Logs 
+(
+	LogId int identity(1,1) not null,
+	EventTime datetime ,
+	EventType nvarchar(200) ,
+	ObjectName nvarchar(200) ,
+	QueryText nvarchar(max) ,
+	ExecutedBy nvarchar(200) ,
+	HostName nvarchar(200) 
+)
+
+if exists(select * from sys.triggers where name = 'TRG_DDL_Logs')
+	drop trigger TRG_DDL_Logs on database
+go
+
+create trigger TRG_DDL_Logs on database
+for DDL_DATABASE_LEVEL_EVENTS
+as
+	declare @EventTime datetime
+	declare @EventType nvarchar(200)
+	declare @ObjectName nvarchar(200)
+	declare @QueryText nvarchar(max)
+	declare @ExecutedBy nvarchar(200)
+	declare @HostName nvarchar(200)
+	declare @Data XML
+	set @data = EVENTDATA()
+	select	
+		@EventTime = GETDATE(),
+		@EventType = @Data.value('(/EVENT_INSTANCE/EventType)[1]', 'nvarchar(200)') ,
+		@ObjectName = @Data.value('(/EVENT_INSTANCE/ObjectName)[1]', 'nvarchar(200)') ,
+		@QueryText = @Data.value('(/EVENT_INSTANCE/TSQLCommand)[1]', 'nvarchar(max)') , 
+		@ExecutedBy = USER_NAME() ,
+		@HostName = HOST_NAME()
+		insert into DBA.DDL_Logs
+		(
+		 [EventTime]
+		,[EventType]
+		,[ObjectName]
+		,[QueryText]
+		,[ExecutedBy]
+		,[HostName]
+		)
+		 values
+		 (
+		  @EventTime 
+		 ,@EventType 
+		 ,@ObjectName 
+		 ,@QueryText 
+		 ,@ExecutedBy 
+		 ,@HostName
+		)
+go
+
+-- Test TRG_DDL_Logs Trigger --
+
+create table dbo.TestDDLTrigger
+(
+	LogId int identity(1,1),
+	LogName nvarchar(200)
+)
+
+drop table dbo.TestDDLTrigger
+
+select * from DBA.DDL_Logs
+
+
+		
+
+
+
+
