@@ -51,3 +51,6 @@ from temp_transfer..error02002 e
 cross apply sys.fn_physloccracker (%%physloc%%) f
 order by f.file_id, f.page_id, f.slot_id
 go
+
+-- check B_Tree on clustered index for a table 
+
