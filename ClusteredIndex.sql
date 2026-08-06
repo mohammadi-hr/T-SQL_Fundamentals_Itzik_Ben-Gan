@@ -31,3 +31,23 @@ select OBJECT_NAME(OBJECT_ID),* from sys.indexes where type_desc = 'HEAP'
 -- check the info of heap table
 
 select id, rows, FirstIAM from sys.sysindexes where id = OBJECT_ID('Error02002')
+
+-- check  the pages of heap table
+
+dbcc ind('Temp_Transfer', 'dbo.Error02002', 1) with no_infomsgs
+
+-- chech where the records of table saved in which page
+
+sp_helpfile
+
+select  sys.fn_PhysLocFormatter (%%physloc%%) as Physical_RID
+		,*
+from temp_transfer..error02002
+
+-- check the data_fiel id , page id and record id of tables records
+
+select * 
+from temp_transfer..error02002 e
+cross apply sys.fn_physloccracker (%%physloc%%) f
+order by f.file_id, f.page_id, f.slot_id
+go
