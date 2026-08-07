@@ -54,9 +54,16 @@ sp_refreshview 'dbo.testPackageView'
 create view dbo.testPackageView
 with schemabinding
 as
-select p.UserContainerId,ps.NumberOfMonthTitle
+select p.id as packageId,ps.id packageSalesAmountId,p.UserContainerId,ps.NumberOfMonthTitle,ps.BasePackageTypeId
 from dbo.Package P
 join dbo.PackageSalesAmount PS
 on P.PackageSalesAmountId = PS.id
 
 GO
+
+-- what is index view and why use it ?
+-- In SQL Server, an indexed view is essentially a view whose result is physically materialized and stored as an index.
+
+create unique clustered index [PackageViewMaterialized] on dbo.testPackageView(packageId,packageSalesAmountId)
+
+drop view dbo.testPackageView
