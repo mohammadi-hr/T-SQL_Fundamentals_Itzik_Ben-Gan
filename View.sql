@@ -33,3 +33,30 @@ select * from INFORMATION_SCHEMA.VIEWS
 	where OBJECT_ID = OBJECT_ID('[dbo].[UserCollaborator]')
 GO
 
+
+-- how to create an encrypted view
+
+create view testPackageView
+with encryption 
+as
+select p.UserContainerId,ps.NumberOfMonthTitle from Master_TPS_ECommerce..Package P
+join Master_TPS_ECommerce..PackageSalesAmount PS
+on P.PackageSalesAmountId = PS.id
+
+GO
+
+-- if you use * for view and the main tables alter so you have to use :
+
+sp_refreshview 'dbo.testPackageView'
+
+-- better solution : use schemabinding
+
+create view dbo.testPackageView
+with schemabinding
+as
+select p.UserContainerId,ps.NumberOfMonthTitle
+from dbo.Package P
+join dbo.PackageSalesAmount PS
+on P.PackageSalesAmountId = PS.id
+
+GO
