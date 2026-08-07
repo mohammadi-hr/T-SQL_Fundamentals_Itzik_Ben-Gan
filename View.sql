@@ -22,3 +22,14 @@ select * from INFORMATION_SCHEMA.VIEWS
  from sys.sql_modules
  where OBJECT_ID = OBJECT_ID('dbo.pakages')
 
+ -- how to check that a view depends on which tables
+
+ sp_depends '[dbo].[UserCollaborator]'
+ go
+
+ select *,
+		OBJECT_NAME(referenced_major_id) 
+	from sys.sql_dependencies
+	where OBJECT_ID = OBJECT_ID('[dbo].[UserCollaborator]')
+GO
+
