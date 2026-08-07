@@ -70,3 +70,27 @@ create unique clustered index [PackageViewMaterialized] on dbo.testPackageView(p
 select * from dbo.testPackageView with(noexpand)
 
 drop view dbo.testPackageView
+
+
+-- Create view 'WITH CHECK OPTION' to :
+-- If you use the view to INSERT or UPDATE rows, SQL Server will make sure the resulting row still satisfies the view's WHERE condition.
+
+create view dbo.testPackageView
+with schemabinding
+as
+select p.id as packageId,ps.id packageSalesAmountId,p.UserContainerId,ps.NumberOfMonth,ps.BasePackageTypeId
+from dbo.Package P
+join dbo.PackageSalesAmount PS
+on P.PackageSalesAmountId = PS.id
+where ps.NumberOfMonth = 3
+GO
+
+create unique clustered index [PackageViewMaterialized] on dbo.testPackageView(packageId,packageSalesAmountId)
+
+select * from dbo.testPackageView with(noexpand)
+
+-- test insert or update the view and change the NumberOfMonth to 4 ? 
+
+-- Partitioned View
+-- it is a view that combines data from multiple tables with UNION ALL, where each table contains a different portion ("partition") of the overall data
+
