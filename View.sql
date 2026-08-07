@@ -66,4 +66,7 @@ GO
 
 create unique clustered index [PackageViewMaterialized] on dbo.testPackageView(packageId,packageSalesAmountId)
 
+-- wahen you create index view you should force ms sql to use index on view
+select * from dbo.testPackageView with(noexpand)
+
 drop view dbo.testPackageView
